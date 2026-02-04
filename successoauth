@@ -1,21 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script>
-        // Extract query params and redirect to app
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('userId');
-        const secret = urlParams.get('secret');
-        
-        if (userId && secret) {
-            // Redirect to app with custom scheme
-            window.location.href = `myordr://oauth-success?userId=${userId}&secret=${secret}`;
-        } else {
-            window.location.href = 'myordr://oauth-success';
-        }
-    </script>
+  <meta charset="utf-8" />
+  <title>Signing you in…</title>
+  <script>
+    // Hand control back to the iOS app
+    window.location.href = "myordr://oauth-success";
+  </script>
 </head>
 <body>
-    <p>Redirecting to app...</p>
+  <p>Signing you in…</p>
 </body>
-</html> 
+</html>
