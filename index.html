@@ -1,25 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting...</title>
+    <title>Sign In Successful - MyOrdr</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            margin: 0 0 1rem 0;
+            font-size: 2rem;
+        }
+        p {
+            margin: 0 0 2rem 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✅</div>
+        <h1>Sign In Successful!</h1>
+        <p>You have been successfully signed in to MyOrdr.</p>
+        <div class="loading"></div>
+        <p>Redirecting you back to the app...</p>
+    </div>
+
     <script>
-        // Extract query parameters from URL
+        // Extract userId and secret from URL query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('userId');
         const secret = urlParams.get('secret');
         
-        // If we have userId and secret, redirect to app with them
+        console.log('OAuth callback received - userId:', userId ? 'present' : 'missing', 'secret:', secret ? 'present' : 'missing');
+        
+        // Build the app redirect URL with parameters
+        let appUrl = 'myordr://oauth-success';
         if (userId && secret) {
-            window.location.href = `myordr://oauth-success?userId=${encodeURIComponent(userId)}&secret=${encodeURIComponent(secret)}`;
+            appUrl += `?userId=${encodeURIComponent(userId)}&secret=${encodeURIComponent(secret)}`;
+            console.log('Redirecting to app with userId and secret');
         } else {
-            // Otherwise just redirect to app (session might already be created)
-            window.location.href = 'myordr://oauth-success';
+            console.warn('Warning: userId or secret missing from URL');
         }
+        
+        // Redirect back to the app immediately
+        window.location.href = appUrl;
+        
+        // Fallback - try again after a short delay
+        setTimeout(() => {
+            window.location.href = appUrl;
+        }, 500);
+        
+        // Fallback - try to close the window after 2 seconds
+        setTimeout(() => {
+            window.close();
+        }, 2000);
     </script>
-</head>
-<body>
-    <p>Redirecting to app...</p>
 </body>
 </html>
