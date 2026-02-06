@@ -67,28 +67,69 @@
         const secret = urlParams.get('secret');
         
         console.log('OAuth callback received - userId:', userId ? 'present' : 'missing', 'secret:', secret ? 'present' : 'missing');
+        console.log('Full URL:', window.location.href);
+        console.log('Query string:', window.location.search);
+        
+        // Also check hash/fragment (some OAuth flows use #)
+        let hashUserId = null;
+        let hashSecret = null;
+        if (window.location.hash) {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            hashUserId = hashParams.get('userId');
+            hashSecret = hashParams.get('secret');
+            console.log('Hash params - userId:', hashUserId ? 'present' : 'missing', 'secret:', hashSecret ? 'present' : 'missing');
+        }
+        
+        // Use hash params if query params are missing
+        const finalUserId = userId || hashUserId;
+        const finalSecret = secret || hashSecret;
         
         // Build the app redirect URL with parameters
         let appUrl = 'myordr://oauth-success';
-        if (userId && secret) {
-            appUrl += `?userId=${encodeURIComponent(userId)}&secret=${encodeURIComponent(secret)}`;
+        if (finalUserId && finalSecret) {
+            appUrl += `?userId=${encodeURIComponent(finalUserId)}&secret=${encodeURIComponent(finalSecret)}`;
             console.log('Redirecting to app with userId and secret');
         } else {
             console.warn('Warning: userId or secret missing from URL');
+            console.warn('This might mean Appwrite created the session server-side');
+            console.warn('The app will try to check for an existing session');
+            // Still redirect - the app will check for an existing session
+            appUrl += '?session_check=true';
         }
         
-        // Redirect back to the app immediately
-        window.location.href = appUrl;
+        // Try to redirect immediately
+        try {
+            window.location.href = appUrl;
+        } catch (e) {
+            console.error('Error redirecting:', e);
+        }
         
         // Fallback - try again after a short delay
         setTimeout(() => {
-            window.location.href = appUrl;
+            try {
+                window.location.href = appUrl;
+            } catch (e) {
+                console.error('Error in fallback redirect:', e);
+            }
         }, 500);
         
-        // Fallback - try to close the window after 2 seconds
+        // Additional fallback - try to close the window after 2 seconds
         setTimeout(() => {
-            window.close();
+            try {
+                window.close();
+            } catch (e) {
+                // Can't close window in some contexts
+            }
         }, 2000);
+        
+        // Last resort - try to open the app URL one more time
+        setTimeout(() => {
+            try {
+                window.location.href = appUrl;
+            } catch (e) {
+                console.error('Error in final redirect attempt:', e);
+            }
+        }, 1500);
     </script>
 </body>
 </html>
